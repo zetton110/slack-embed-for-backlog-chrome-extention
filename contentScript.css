@@ -1,15 +1,38 @@
-/* contentScript.css */
-.embedded-message {
+/* 埋め込みコンテナ */
+.slack-embed-container {
   border: 1px solid #e1e1e1;
+  background-color: #f9f9f9;
   padding: 10px;
   margin-top: 5px;
-  background-color: #f9f9f9;
+  /* 必要に応じて他のスタイルを追加 */
 }
-.embedded-message img {
-  width: 24px;
-  height: 24px;
-  vertical-align: middle;
+
+/* ヘッダー部分 */
+.slack-embed-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
 }
-.embedded-message strong {
-  margin-left: 5px;
+
+/* ユーザーアイコン */
+.slack-embed-user-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+/* ユーザー名 */
+.slack-embed-user-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+/* メッセージ内容 */
+.slack-embed-message-content {
+  font-size: 13px;
+  color: #555;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
