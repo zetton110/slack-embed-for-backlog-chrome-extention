@@ -90,6 +90,9 @@ function processLinks(rootElement) {
 
 // メッセージを表示する関数
 function displayMessage(link, data) {
+  // メッセージテキストをフォーマット
+  const formattedMessage = formatSlackMessage(data.message);
+
   // 埋め込みコンテナの作成
   const embedContainer = document.createElement("div");
   embedContainer.classList.add("slack-embed-container");
@@ -113,7 +116,7 @@ function displayMessage(link, data) {
   // メッセージ内容の作成
   const messageContent = document.createElement("div");
   messageContent.classList.add("slack-embed-message-content");
-  messageContent.textContent = data.message;
+  messageContent.innerHTML = formattedMessage; // innerHTMLを使用してリンクを表示
 
   // 埋め込みコンテナにヘッダーとメッセージを追加
   embedContainer.appendChild(header);
@@ -121,4 +124,42 @@ function displayMessage(link, data) {
 
   // 埋め込みコンテナをリンクの直後に挿入
   link.parentNode.insertBefore(embedContainer, link.nextSibling);
+}
+
+// Slackメッセージテキストをフォーマットする関数
+function formatSlackMessage(text) {
+  // HTML特殊文字をエスケープしてXSSを防止
+  text = escapeHtml(text);
+
+  // Slack形式のリンクをHTMLリンクに置換
+  // リンクのパターン：<https://example.com|リンクテキスト> または <https://example.com>
+  const linkRegex = /&lt;(https?:\/\/[^\|&]+)(\|[^&]+)?&gt;/g;
+
+  text = text.replace(linkRegex, function (match, url, linkText) {
+    if (linkText) {
+      // '|'を除去してリンクテキストを取得
+      linkText = linkText.substring(1);
+    } else {
+      // リンクテキストがない場合、URLをそのまま表示
+      linkText = url;
+    }
+    // HTMLのアンカータグを返す
+    return `<a href="${url}" target="_blank">${linkText}</a>`;
+  });
+
+  return text;
+}
+
+// HTML特殊文字をエスケープする関数
+function escapeHtml(text) {
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  };
+  return text.replace(/[&<>"']/g, function (m) {
+    return map[m];
+  });
 }
