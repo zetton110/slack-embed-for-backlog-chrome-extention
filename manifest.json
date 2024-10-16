@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Slackメッセージ埋め込み表示",
+  "version": "1.0",
+  "description": "Backlogのタスク内のSlackメッセージリンクを埋め込み表示します。",
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "content_scripts": [
+    {
+      "matches": ["https://*.backlog.jp/*"],
+      "js": ["contentScript.js"],
+      "css": ["contentScript.css"]
+    }
+  ],
+  "host_permissions": ["https://slack.com/api/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

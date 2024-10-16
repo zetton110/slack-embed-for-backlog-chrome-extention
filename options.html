@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>設定</title>
+  </head>
+  <body>
+    <h1>設定</h1>
+    <div>
+      <label for="slackToken">Slack OAuthトークン:</label><br />
+      <input type="text" id="slackToken" placeholder="xoxp-..." />
+    </div>
+    <div style="margin-top: 10px">
+      <label for="organizationId">Organization ID:</label><br />
+      <input
+        type="text"
+        id="organizationId"
+        placeholder="Your Organization ID"
+      />
+    </div>
+    <button id="save" style="margin-top: 20px">保存</button>
+    <script src="options.js"></script>
+  </body>
+</html>
