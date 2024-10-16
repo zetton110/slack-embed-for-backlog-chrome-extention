@@ -116,7 +116,7 @@ function displayMessage(link, data) {
   // メッセージ内容の作成
   const messageContent = document.createElement("div");
   messageContent.classList.add("slack-embed-message-content");
-  messageContent.innerHTML = formattedMessage; // innerHTMLを使用してリンクを表示
+  messageContent.innerHTML = formattedMessage; // innerHTMLを使用してフォーマット済みのメッセージを挿入
 
   // 埋め込みコンテナにヘッダーとメッセージを追加
   embedContainer.appendChild(header);
@@ -124,30 +124,6 @@ function displayMessage(link, data) {
 
   // 埋め込みコンテナをリンクの直後に挿入
   link.parentNode.insertBefore(embedContainer, link.nextSibling);
-}
-
-// Slackメッセージテキストをフォーマットする関数
-function formatSlackMessage(text) {
-  // HTML特殊文字をエスケープしてXSSを防止
-  text = escapeHtml(text);
-
-  // Slack形式のリンクをHTMLリンクに置換
-  // リンクのパターン：<https://example.com|リンクテキスト> または <https://example.com>
-  const linkRegex = /&lt;(https?:\/\/[^\|&]+)(\|[^&]+)?&gt;/g;
-
-  text = text.replace(linkRegex, function (match, url, linkText) {
-    if (linkText) {
-      // '|'を除去してリンクテキストを取得
-      linkText = linkText.substring(1);
-    } else {
-      // リンクテキストがない場合、URLをそのまま表示
-      linkText = url;
-    }
-    // HTMLのアンカータグを返す
-    return `<a href="${url}" target="_blank">${linkText}</a>`;
-  });
-
-  return text;
 }
 
 // HTML特殊文字をエスケープする関数
@@ -162,4 +138,18 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, function (m) {
     return map[m];
   });
+}
+
+// Slackメッセージテキストをフォーマットする関数
+function formatSlackMessage(text) {
+  // メッセージテキストをMarkdownからHTMLに変換
+  const markdownText = text;
+
+  // markedを使用してMarkdownをHTMLに変換
+  let html = marked.parse(markdownText);
+
+  // DOMPurifyでHTMLをサニタイズ
+  html = DOMPurify.sanitize(html);
+
+  return html;
 }
