@@ -97,6 +97,15 @@ function displayMessage(link, data) {
   const embedContainer = document.createElement("div");
   embedContainer.classList.add("slack-embed-container");
 
+  // **アイコン画像の追加**
+  const embedIcon = document.createElement("img");
+  embedIcon.src = chrome.runtime.getURL("icon/icon-128.png");
+  embedIcon.alt = "Embed Icon";
+  embedIcon.classList.add("slack-embed-top-right-icon");
+
+  // **埋め込みコンテナにアイコンを追加**
+  embedContainer.appendChild(embedIcon);
+
   // ヘッダー部分の作成
   const header = document.createElement("div");
   header.classList.add("slack-embed-header");

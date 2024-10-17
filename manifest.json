@@ -23,5 +23,11 @@
     "16": "icon/icon-16.png",
     "48": "icon/icon-48.png",
     "128": "icon/icon-128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icon/icon-128.png"],
+      "matches": ["https://*.backlog.jp/*"]
+    }
+  ]
 }
