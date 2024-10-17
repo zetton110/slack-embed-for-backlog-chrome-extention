@@ -23,6 +23,7 @@
   - [インストール手順](#インストール手順)
     - [1. リポジトリのクローンまたはダウンロード](#1-リポジトリのクローンまたはダウンロード)
     - [2. Slackユーザートークンの発行](#2-slackユーザートークンの発行)
+      - [手順](#手順)
     - [3. 拡張機能の設定](#3-拡張機能の設定)
     - [4. Chromeへの拡張機能の読み込み](#4-chromeへの拡張機能の読み込み)
     - [使い方](#使い方)
@@ -47,7 +48,8 @@ git clone https://github.com/zetton110/slack-embed-for-backlog-chrome-extention.
 拡張機能がSlack APIにアクセスするためには、ユーザートークンが必要です。以下の手順でトークンを取得してください。
 
 注意：ユーザートークンは強力な権限を持つため、取り扱いには十分ご注意ください。
-**手順**
+
+#### 手順
 
 1. Slack APIページにアクセス  
   https://api.slack.com/ にアクセスします。
@@ -69,7 +71,7 @@ git clone https://github.com/zetton110/slack-embed-for-backlog-chrome-extention.
 6. ユーザートークンスコープの設定  
    左側のメニューから「OAuth & Permissions」を選択します。
   - User Token Scopesまでスクロールします。
-  - 「Add an OAuth Scope」をクリックし、以下のスコープを追加します：
+  - 「Add an OAuth Scope」をクリックし、以下のスコープを追加します。
     - channels:history：パブリックチャンネルのメッセージ履歴を取得
     - groups:history：プライベートチャンネルのメッセージ履歴を取得（必要な場合）
     - im:history：DMのメッセージ履歴を取得（必要な場合）
@@ -110,7 +112,7 @@ git clone https://github.com/zetton110/slack-embed-for-backlog-chrome-extention.
 
 ###  使い方
 1. Backlogを開く  
-   ChromeでBacklogのサイト（例：https://yourcompany.backlog.jp/）を開きます。
+   ChromeでBacklogのサイト（例：https://yourcompany.backlog.jp/ ）を開きます。
 2. Slackメッセージリンクを貼り付ける
    - 課題のコメントや説明欄に、Slackのメッセージリンクを貼り付けます。  
      例：``` https://yourworkspace.slack.com/archives/C01234567/p1612345678901234 ```  
