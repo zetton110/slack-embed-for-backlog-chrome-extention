@@ -7,7 +7,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         const result = await chrome.storage.sync.get("slackToken");
         const slackToken = result.slackToken;
         if (!slackToken) {
-          console.error("Slackトークンが設定されていません。");
+          console.error("Slack token is not set.");
           sendResponse(null);
           return;
         }
@@ -51,15 +51,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
               userIcon: userData.user.profile.image_48,
             });
           } else {
-            console.error("ユーザー情報の取得に失敗しました。", userData.error);
+            console.error("failed to get user information.", userData.error);
             sendResponse(null);
           }
         } else {
-          console.error("メッセージの取得に失敗しました。", messageData.error);
+          console.error("failed to receive message.", messageData.error);
           sendResponse(null);
         }
       } catch (error) {
-        console.error("エラーが発生しました。", error);
+        console.error("An error has occurred.", error);
         sendResponse(null);
       }
     })();

@@ -6,7 +6,7 @@ chrome.storage.sync.get("organizationId", function (result) {
   const organizationId = result.organizationId;
 
   if (!organizationId) {
-    console.error("Organization IDが設定されていません。");
+    console.error("Organization ID is not set.");
     return;
   }
 
@@ -16,7 +16,7 @@ chrome.storage.sync.get("organizationId", function (result) {
     main();
   } else {
     // 一致しない場合、スクリプトを実行しない
-    console.log("Organization IDが一致しないため、スクリプトを実行しません。");
+    console.log("Organization IDs do not match.");
   }
 });
 
@@ -80,7 +80,7 @@ function processLinks(rootElement) {
             // メッセージを表示する処理
             displayMessage(link, response);
           } else {
-            console.error("メッセージの取得に失敗しました。");
+            console.error("failed to receive message.");
           }
         }
       );

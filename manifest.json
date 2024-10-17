@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Slackメッセージ埋め込み表示",
+  "name": "Slack Link Embedder for Backlog",
   "version": "1.0",
   "description": "Backlogのタスク内のSlackメッセージリンクを埋め込み表示します。",
   "permissions": ["activeTab", "scripting", "storage", "tabs"],
   "content_scripts": [
     {
       "matches": ["https://*.backlog.jp/*"],
-      "js": ["purify.min.js", "marked.min.js","contentScript.js"],
+      "js": ["lib/purify.min.js", "lib/marked.min.js","contentScript.js"],
       "css": ["contentScript.css"]
     }
   ],
