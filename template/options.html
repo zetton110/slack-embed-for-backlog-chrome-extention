@@ -1,24 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>設定</title>
+    <title>Slack Link Embedder for Backlog Settings</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+      }
+      .options-container {
+        background-color: #ffffff;
+        padding: 20px;
+        max-width: 500px;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      label {
+        display: block;
+        margin-top: 15px;
+        font-weight: bold;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 8px 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-top: 20px;
+        background-color: #4caf50;
+        color: #ffffff;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .message {
+        margin-top: 15px;
+        text-align: center;
+        font-size: 14px;
+        color: #4caf50;
+      }
+    </style>
   </head>
   <body>
-    <h1>設定</h1>
-    <div>
-      <label for="slackToken">Slack OAuthトークン:</label><br />
-      <input type="text" id="slackToken" placeholder="xoxp-..." />
+    <div class="options-container">
+      <h1>Slack Link Embedder for Backlog 設定</h1>
+      <form id="options-form">
+        <label for="slackToken">Slack User Token</label>
+        <input
+          type="text"
+          id="slackToken"
+          name="slackToken"
+          placeholder="xoxp-xxxxxxxxxxxx-xxxxxxxxxxxx-xxxxxxxxxxxx-xxxxxxxxxxxx"
+        />
+
+        <label for="organizationId">Backlog Organization ID</label>
+        <input
+          type="text"
+          id="organizationId"
+          name="organizationId"
+          placeholder="yourcompany"
+        />
+        <p>e.g. https://{ yourcompany }.backlog.jp/</p>
+        <button type="submit">Save</button>
+        <div class="message" id="message"></div>
+      </form>
     </div>
-    <div style="margin-top: 10px">
-      <label for="organizationId">Organization ID:</label><br />
-      <input
-        type="text"
-        id="organizationId"
-        placeholder="Your Organization ID"
-      />
-    </div>
-    <button id="save" style="margin-top: 20px">保存</button>
-    <script src="js/options.js"></script>
+    <script src="options.js"></script>
   </body>
 </html>
