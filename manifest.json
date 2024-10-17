@@ -7,16 +7,16 @@
   "content_scripts": [
     {
       "matches": ["https://*.backlog.jp/*"],
-      "js": ["lib/purify.min.js", "lib/marked.min.js","contentScript.js"],
-      "css": ["contentScript.css"]
+      "js": ["lib/purify.min.js", "lib/marked.min.js","js/contentScript.js"],
+      "css": ["style/contentScript.css"]
     }
   ],
   "host_permissions": ["https://slack.com/api/*"],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "js/background.js"
   },
   "options_ui": {
-    "page": "options.html",
+    "page": "template/options.html",
     "open_in_tab": true
   },
   "icons": {
