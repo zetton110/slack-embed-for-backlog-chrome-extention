@@ -26,9 +26,9 @@
       - [手順](#手順)
     - [3. 拡張機能の設定](#3-拡張機能の設定)
     - [4. Chromeへの拡張機能の読み込み](#4-chromeへの拡張機能の読み込み)
-    - [使い方](#使い方)
-    - [注意事項](#注意事項)
-    - [ライセンス](#ライセンス)
+  - [使い方](#使い方)
+  - [注意事項](#注意事項)
+  - [ライセンス](#ライセンス)
 
 ---
 
@@ -110,7 +110,7 @@ git clone https://github.com/zetton110/slack-embed-for-backlog-chrome-extention.
 4. 拡張機能の確認
    - 「Slack Link Embedder for Backlog」が拡張機能リストに表示されれば成功です。
 
-###  使い方
+## 使い方
 1. Backlogを開く  
    ChromeでBacklogのサイト（例：https://yourcompany.backlog.jp/ ）を開きます。
 2. Slackメッセージリンクを貼り付ける
@@ -123,7 +123,7 @@ git clone https://github.com/zetton110/slack-embed-for-backlog-chrome-extention.
 5. 動的な更新
    - ページングや新しいコメントの追加でリンクが表示された場合でも、自動的に埋め込みが行われます。
 
-###  注意事項
+## 注意事項
 - セキュリティ
   - ユーザートークンは強力な権限を持つため、第三者に漏洩しないように十分注意してください。
   - トークンはローカル環境のChromeストレージに保存されます。
@@ -133,6 +133,7 @@ git clone https://github.com/zetton110/slack-embed-for-backlog-chrome-extention.
   - この拡張機能は、Backlogの特定の組織サイトでのみ動作します。設定したOrganization IDと一致するサイトでのみ機能します。
 - サポート
   - ご不明な点や不具合がありましたら、Issuesからお知らせください。
-###  ライセンス
+  
+## ライセンス
 このプロジェクトはMITライセンスのもとで公開されています。詳細は LICENSE ファイルをご覧ください。
 
