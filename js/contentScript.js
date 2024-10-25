@@ -15,7 +15,7 @@ const observer = new MutationObserver((mutations) => {
             return;
           }
           // ホスト名がorganizationIdと一致するか確認
-          if (hostName === `${organizationId}.backlog.jp`) {
+          if (hostName === `${organizationId}.backlog.jp` || hostName === `${organizationId}.backlog.com`) {
             // 追加されたノード内のリンクを処理
             processLinks(node);
           } else {
