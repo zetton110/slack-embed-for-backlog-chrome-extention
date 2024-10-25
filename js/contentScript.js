@@ -1,55 +1,48 @@
 // 現在のページのホスト名を取得
 const hostName = window.location.hostname; // 例: "yourorg.backlog.jp"
 
-// ストレージからorganizationIdを取得
-chrome.storage.sync.get("organizationId", function (result) {
-  const organizationId = result.organizationId;
+// MutationObserverを設定
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    mutation.addedNodes.forEach((node) =>{
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        // ストレージからorganizationIdを取得
+        chrome.storage.sync.get("organizationId", function (result) {
+          const organizationId = result.organizationId;
 
-  if (!organizationId) {
-    console.error("Organization ID is not set.");
-    return;
-  }
-
-  // ホスト名がorganizationIdと一致するか確認
-  if (hostName === `${organizationId}.backlog.jp`) {
-    // 一致する場合、メイン関数を実行
-    main();
-  } else {
-    // 一致しない場合、スクリプトを実行しない
-    console.log("Organization IDs do not match.");
-  }
-});
-
-function main() {
-  // 既に存在するリンクを処理
-  processLinks(document);
-
-  // MutationObserverを設定
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach(function (node) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          // 追加されたノード内のリンクを処理
-          processLinks(node);
-        }
-      });
+          if (!organizationId) {
+            console.error("Organization ID is not set.");
+            return;
+          }
+          // ホスト名がorganizationIdと一致するか確認
+          if (hostName === `${organizationId}.backlog.jp`) {
+            // 追加されたノード内のリンクを処理
+            processLinks(node);
+          } else {
+            // 一致しない場合、スクリプトを実行しない
+            console.log("Organization IDs do not match.");
+          }
+        });
+      }
     });
   });
+});
 
-  // 監視の開始
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-  });
-}
+// 監視の開始
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+});
 
 // リンクを処理する関数
 function processLinks(rootElement) {
+
   const links = rootElement.querySelectorAll(
     'a[href^="https://"]:not(.slack-embedded)'
   );
 
   links.forEach((link) => {
+
     // 既に処理済みのリンクはスキップ
     if (link.classList.contains("slack-embedded")) {
       return;

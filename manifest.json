@@ -8,7 +8,8 @@
     {
       "matches": ["https://*.backlog.jp/*"],
       "js": ["lib/purify.min.js", "lib/marked.min.js","js/contentScript.js"],
-      "css": ["style/contentScript.css"]
+      "css": ["style/contentScript.css"],
+      "all_frames": true 
     }
   ],
   "host_permissions": ["https://slack.com/api/*"],
