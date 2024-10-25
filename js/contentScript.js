@@ -1,58 +1,41 @@
-// 現在のページのホスト名を取得
-const hostName = window.location.hostname; // 例: "yourorg.backlog.jp"
+const hostName = window.location.hostname; // e.g. "yourorg.backlog.jp" or "yourorg.backlog.com"
 
-// MutationObserverを設定
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     mutation.addedNodes.forEach((node) =>{
       if (node.nodeType === Node.ELEMENT_NODE) {
-        // ストレージからorganizationIdを取得
-        chrome.storage.sync.get("organizationId", function (result) {
+        chrome.storage.sync.get("organizationId", (result) =>{
           const organizationId = result.organizationId;
-
           if (!organizationId) {
-            console.error("Organization ID is not set.");
             return;
           }
-          // ホスト名がorganizationIdと一致するか確認
           if (hostName === `${organizationId}.backlog.jp` || hostName === `${organizationId}.backlog.com`) {
-            // 追加されたノード内のリンクを処理
             processLinks(node);
-          } else {
-            // 一致しない場合、スクリプトを実行しない
-            console.log("Organization IDs do not match.");
-          }
+          } 
         });
       }
     });
   });
 });
 
-// 監視の開始
 observer.observe(document.body, {
   childList: true,
   subtree: true,
 });
 
-// リンクを処理する関数
-function processLinks(rootElement) {
+processLinks = (rootElement) =>{
 
-  const links = rootElement.querySelectorAll(
-    'a[href^="https://"]:not(.slack-embedded)'
-  );
+  const elements = rootElement.querySelectorAll('a[href^="https://"]:not(.slack-embedded)');
 
-  links.forEach((link) => {
+  elements.forEach((el) => {
 
-    // 既に処理済みのリンクはスキップ
-    if (link.classList.contains("slack-embedded")) {
+    // skip when the link is embedded
+    if (el.classList.contains("slack-embedded")) {
       return;
     }
 
-    const url = link.href;
-
-    // Slackメッセージリンクの正規表現パターン
-    const slackLinkRegex =
-      /https:\/\/([\w\-]+)\.slack\.com\/archives\/(\w+)\/p(\d+)/;
+    const slackLinkRegex = /https:\/\/([\w\-]+)\.slack\.com\/archives\/(\w+)\/p(\d+)/;
+    const url = el.href;
     const match = slackLinkRegex.exec(url);
 
     if (match) {
@@ -60,18 +43,16 @@ function processLinks(rootElement) {
       const messageTs = match[3];
       const ts = messageTs.slice(0, 10) + "." + messageTs.slice(10);
 
-      // リンクを処理済みにする
-      link.classList.add("slack-embedded");
+      // Add processed flag to the element
+      el.classList.add("slack-embedded");
 
-      // background.jsにメッセージを送信し、レスポンスを受け取る
       chrome.runtime.sendMessage(
         { action: "fetchSlackMessage", channelId, ts },
-        function (response) {
+        (response) =>{
           if (chrome.runtime.lastError) {
             console.error("Error:", chrome.runtime.lastError);
           } else if (response && response.message) {
-            // メッセージを表示する処理
-            displayMessage(link, response);
+            embedSlackCard(el, response);
           } else {
             console.error("failed to receive message.");
           }
@@ -81,55 +62,49 @@ function processLinks(rootElement) {
   });
 }
 
-// メッセージを表示する関数
-function displayMessage(link, data) {
-  // メッセージテキストをフォーマット
-  const formattedMessage = formatSlackMessage(data.message);
+embedSlackCard = (el, data) => {
 
-  // 埋め込みコンテナの作成
   const embedContainer = document.createElement("div");
   embedContainer.classList.add("slack-embed-container");
 
-  // **アイコン画像の追加**
+  // Add icon to the top right of the embed container
   const embedIcon = document.createElement("img");
   embedIcon.src = chrome.runtime.getURL("icon/icon-128.png");
   embedIcon.alt = "Embed Icon";
   embedIcon.classList.add("slack-embed-top-right-icon");
-
-  // **埋め込みコンテナにアイコンを追加**
   embedContainer.appendChild(embedIcon);
 
-  // ヘッダー部分の作成
+  // Create header
   const header = document.createElement("div");
   header.classList.add("slack-embed-header");
 
+  // Create user icon and name to the header
   const userIcon = document.createElement("img");
   userIcon.src = data.userIcon;
   userIcon.alt = data.userName;
   userIcon.classList.add("slack-embed-user-icon");
-
   const userName = document.createElement("span");
   userName.textContent = data.userName;
   userName.classList.add("slack-embed-user-name");
-
   header.appendChild(userIcon);
   header.appendChild(userName);
 
-  // メッセージ内容の作成
+  // Create message content
+  const msgHtml = convertToHtml(data.message);
   const messageContent = document.createElement("div");
   messageContent.classList.add("slack-embed-message-content");
-  messageContent.innerHTML = formattedMessage; // innerHTMLを使用してフォーマット済みのメッセージを挿入
+  messageContent.innerHTML = msgHtml;
 
-  // 埋め込みコンテナにヘッダーとメッセージを追加
+  // Add header and message content to the embed container
   embedContainer.appendChild(header);
   embedContainer.appendChild(messageContent);
 
-  // 埋め込みコンテナをリンクの直後に挿入
-  link.parentNode.insertBefore(embedContainer, link.nextSibling);
+  // embed slack card after the link
+  el.parentNode.insertBefore(embedContainer, el.nextSibling);
 }
 
-// HTML特殊文字をエスケープする関数
-function escapeHtml(text) {
+
+escapeHtml = (text) => {
   const map = {
     "&": "&amp;",
     "<": "&lt;",
@@ -142,16 +117,10 @@ function escapeHtml(text) {
   });
 }
 
-// Slackメッセージテキストをフォーマットする関数
-function formatSlackMessage(text) {
-  // メッセージテキストをMarkdownからHTMLに変換
+
+convertToHtml = (text) => {
   const markdownText = text;
-
-  // markedを使用してMarkdownをHTMLに変換
   let html = marked.parse(markdownText);
-
-  // DOMPurifyでHTMLをサニタイズ
   html = DOMPurify.sanitize(html);
-
   return html;
 }

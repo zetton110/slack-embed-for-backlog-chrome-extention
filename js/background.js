@@ -1,9 +1,7 @@
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   if (request.action === "fetchSlackMessage") {
-    // 非同期処理を行うので、trueを返してメッセージチャンネルを開いたままにする
     (async () => {
       try {
-        // Slackトークンを取得
         const result = await chrome.storage.sync.get("slackToken");
         const slackToken = result.slackToken;
         if (!slackToken) {
@@ -14,7 +12,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
         const { channelId, ts } = request;
 
-        // メッセージを取得
         const messageResponse = await fetch(
           `https://slack.com/api/conversations.history?channel=${channelId}&latest=${ts}&inclusive=true&limit=1`,
           {
@@ -32,7 +29,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         ) {
           const message = messageData.messages[0];
 
-          // ユーザー情報を取得
           const userResponse = await fetch(
             `https://slack.com/api/users.info?user=${message.user}`,
             {
@@ -44,7 +40,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
           const userData = await userResponse.json();
 
           if (userData.ok) {
-            // 成功したので、データをsendResponseで返す
             sendResponse({
               message: message.text,
               userName: userData.user.profile.real_name || userData.user.name,
@@ -63,6 +58,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         sendResponse(null);
       }
     })();
-    return true; // 非同期応答を示すためにtrueを返す
+    return true;
   }
 });
