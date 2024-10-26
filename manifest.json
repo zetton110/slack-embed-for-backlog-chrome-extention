@@ -3,7 +3,7 @@
   "name": "Slack Link Embedder for Backlog",
   "version": "1.0",
   "description": "Backlogのタスク内のSlackメッセージリンクを埋め込み表示します。",
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "permissions": ["storage"],
   "content_scripts": [
     {
       "matches": ["https://*.backlog.jp/*", "https://*.backlog.com/*"],
