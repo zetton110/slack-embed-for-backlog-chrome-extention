@@ -135,5 +135,16 @@ git clone https://github.com/zetton110/slack-embed-for-backlog-chrome-extention.
   - ご不明な点や不具合がありましたら、Issuesからお知らせください。
   
 ## ライセンス
-このプロジェクトはMITライセンスのもとで公開されています。詳細は LICENSE ファイルをご覧ください。
+
+このプロジェクトは MIT ライセンスのもとで公開されています。
+
+- 使用しているライブラリ：
+
+  - **Purify ライブラリ**：Apache License 2.0 および Mozilla Public License 2.0 のもとでライセンスされています。
+
+**ライセンスファイル：**
+
+- [MIT ライセンス](LICENSE)
+- [Apache License 2.0](LICENSE-APACHE)
+- [Mozilla Public License 2.0](LICENSE-MPL)
 
