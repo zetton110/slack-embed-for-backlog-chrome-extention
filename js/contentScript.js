@@ -69,7 +69,7 @@ embedSlackCard = (el, data) => {
 
   // Add icon to the top right of the embed container
   const embedIcon = document.createElement("img");
-  embedIcon.src = chrome.runtime.getURL("icon/icon-128.png");
+  embedIcon.src = chrome.runtime.getURL("icon/icon-48.png");
   embedIcon.alt = "Embed Icon";
   embedIcon.classList.add("slack-embed-top-right-icon");
   embedContainer.appendChild(embedIcon);

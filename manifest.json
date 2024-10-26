@@ -27,8 +27,8 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["icon/icon-128.png"],
-      "matches": ["https://*.backlog.jp/*"]
+      "resources": ["/icon/*.png"],
+      "matches": ["https://*.backlog.jp/*", "https://*.backlog.com/*"]
     }
   ]
 }
