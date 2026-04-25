@@ -1,150 +1,171 @@
 # Slack Message Embedder for Backlog
 
-このChrome拡張機能は、Backlog上に貼られたSlackメッセージのリンクを検出し、その内容を埋め込み表示します。これにより、Backlog上でSlackメッセージの詳細を直接確認することができます。
+Backlog の課題やコメントに貼られた Slack メッセージリンクを自動検出し、メッセージ内容をカード形式で埋め込み表示する Chrome 拡張機能です。Backlog と Slack を行き来することなく、課題上で直接メッセージの内容を確認できます。
+
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-公開中-blue?logo=googlechrome)](https://chromewebstore.google.com/detail/slack-link-embedder-for-b/egloaplennajagjbpdoajkjhhdokgnla)
+
+## インストール
+
+Chrome Web Store から直接インストールできます。
+
+**[Slack Link Embedder for Backlog - Chrome Web Store](https://chromewebstore.google.com/detail/slack-link-embedder-for-b/egloaplennajagjbpdoajkjhhdokgnla)**
+
+> インストール後の設定手順については、下記の「[セットアップ](#3-slack-ユーザートークンの発行)」セクションを参照してください。
 
 ## 特徴
 
-- Slackのメッセージリンクを自動的に検出し、内容を表示
-- ユーザー名、アイコン、メッセージ内容を表示
-- コードブロックやインラインコードの表示に対応
-- Backlog内でのシームレスな情報共有を実現
+- Slack メッセージリンク（`https://xxx.slack.com/archives/...`）を自動検出して内容を展開
+- 投稿者のアイコン・表示名とともにメッセージ本文を表示
+- Markdown 記法、コードブロック、インラインコードの表示に対応
+- MutationObserver による動的検出 — ページ遷移やコメント追加にもリアルタイムで対応
+- DOMPurify による HTML サニタイズで XSS を防止
+
+## デモ
+
+Backlog の課題コメントに Slack リンクを貼ると、以下のようにメッセージがカード表示されます。
+
+```
+https://yourworkspace.slack.com/archives/C01234567/p1612345678901234
+┌──────────────────────────────────────┐
+│  [icon] User Name                    │
+│  メッセージの内容がここに表示されます  │
+└──────────────────────────────────────┘
+```
 
 ## 動作環境
 
-- Google Chrome ブラウザ
-- Backlogを使用している環境
+- Google Chrome（Manifest V3 対応）
+- Backlog（`backlog.jp` または `backlog.com`）を使用していること
 
-## 目次
+## プロジェクト構成
 
-- [Slack Message Embedder for Backlog](#slack-message-embedder-for-backlog)
-  - [特徴](#特徴)
-  - [動作環境](#動作環境)
-  - [目次](#目次)
-  - [インストール手順](#インストール手順)
-    - [1. リポジトリのクローンまたはダウンロード](#1-リポジトリのクローンまたはダウンロード)
-    - [2. Slackユーザートークンの発行](#2-slackユーザートークンの発行)
-      - [手順](#手順)
-    - [3. 拡張機能の設定](#3-拡張機能の設定)
-    - [4. Chromeへの拡張機能の読み込み](#4-chromeへの拡張機能の読み込み)
-  - [使い方](#使い方)
-  - [注意事項](#注意事項)
-  - [ライセンス](#ライセンス)
+```
+slack-embed-for-backlog-chrome-extention/
+├── manifest.json          # Chrome 拡張機能マニフェスト (Manifest V3)
+├── js/
+│   ├── contentScript.js   # Backlog ページに注入されるコンテンツスクリプト
+│   ├── background.js      # Slack API 呼び出しを行う Service Worker
+│   └── options.js         # 設定画面のロジック
+├── lib/
+│   ├── marked.min.js      # Markdown パーサー
+│   └── purify.min.js      # HTML サニタイザー (DOMPurify)
+├── style/
+│   └── contentScript.css  # 埋め込みカードのスタイル
+├── template/
+│   └── options.html       # 設定画面の UI
+├── icon/                  # 拡張機能アイコン (16/48/128px)
+├── LICENSE                # MIT License
+├── LICENSE-APACHE         # Apache License 2.0 (DOMPurify)
+└── LICENSE-MPL            # Mozilla Public License 2.0 (DOMPurify)
+```
 
----
+## アーキテクチャ
+
+拡張機能は3つのコンポーネントで構成されています。
+
+**Content Script（contentScript.js）** — Backlog ページ上で動作し、MutationObserver で DOM の変更を監視します。新しく追加された要素内の Slack リンクを正規表現で検出し、`chrome.runtime.sendMessage` で Background Script にメッセージ取得をリクエストします。レスポンスを受け取ると、marked.js で Markdown を HTML に変換し、DOMPurify でサニタイズした上でカードを DOM に挿入します。
+
+**Background Script（background.js）** — Service Worker として動作し、Content Script からのリクエストに応じて Slack Web API（`conversations.history` と `users.info`）を呼び出します。取得したメッセージ本文・ユーザー名・アイコン URL を Content Script に返します。
+
+**Options（options.js / options.html）** — Slack ユーザートークンと Backlog の Organization ID を `chrome.storage.sync` に保存する設定画面です。
+
+```
+Backlog ページ                  Chrome Extension                Slack API
+─────────────                  ───────────────                ─────────
+     │                              │                            │
+     │ [MutationObserver が         │                            │
+     │  Slack リンクを検出]          │                            │
+     │──── sendMessage ────────────>│                            │
+     │                              │──── conversations.history ─>│
+     │                              │<─── メッセージデータ ───────│
+     │                              │──── users.info ────────────>│
+     │                              │<─── ユーザー情報 ──────────│
+     │<─── response ───────────────│                            │
+     │                              │                            │
+     │ [marked.js + DOMPurify で    │                            │
+     │  カードを生成・挿入]          │                            │
+```
 
 ## インストール手順
 
-### 1. リポジトリのクローンまたはダウンロード
-
-まず、このリポジトリをローカル環境にクローンまたはZIPファイルとしてダウンロードしてください。
+### 1. リポジトリのクローン
 
 ```bash
 git clone https://github.com/zetton110/slack-embed-for-backlog-chrome-extention.git
-
 ```
-または、GitHubページから「Code」ボタンをクリックし、「Download ZIP」でダウンロードしてください。
 
-### 2. Slackユーザートークンの発行
-拡張機能がSlack APIにアクセスするためには、ユーザートークンが必要です。以下の手順でトークンを取得してください。
+または、GitHub ページから「Code」→「Download ZIP」でダウンロードしてください。
 
-注意：ユーザートークンは強力な権限を持つため、取り扱いには十分ご注意ください。
+### 2. Chrome に拡張機能を読み込む
 
-#### 手順
+1. Chrome のアドレスバーに `chrome://extensions/` と入力してアクセスします。
+2. 右上の「デベロッパーモード」をオンにします。
+3. 「パッケージ化されていない拡張機能を読み込む」をクリックし、クローンしたフォルダを選択します。
+4. 「Slack Link Embedder for Backlog」が一覧に表示されれば成功です。
 
-1. Slack APIページにアクセス  
-  https://api.slack.com/ にアクセスします。
-  
-2. Your Appsを開く  
-  右上の「Your Apps」をクリックします。
+### 3. Slack ユーザートークンの発行
 
-3. 新しいアプリを作成  
-  「Create New App」をクリックします。
+拡張機能が Slack API にアクセスするためにユーザートークンが必要です。
 
-4. アプリの作成方法を選択  
-  「From scratch」を選択します。
+> **注意**: ユーザートークンは強力な権限を持つため、取り扱いには十分ご注意ください。
 
-5. アプリ情報の入力
-  - App Name：任意のアプリ名を入力します（例：Backlog Message Embedder）。  
-  - Development Slack Workspace：アプリをインストールするワークスペースを選択します。
-  - 「Create App」をクリックします。  
+1. [Slack API](https://api.slack.com/) にアクセスし、右上の「Your Apps」を開きます。
+2. 「Create New App」→「From scratch」を選択します。
+3. アプリ名（例: `Backlog Message Embedder`）とワークスペースを入力して作成します。
+4. 左メニューの「OAuth & Permissions」を開き、**User Token Scopes** に以下を追加します。
 
-6. ユーザートークンスコープの設定  
-   左側のメニューから「OAuth & Permissions」を選択します。
-  - User Token Scopesまでスクロールします。
-  - 「Add an OAuth Scope」をクリックし、以下のスコープを追加します。
-    - channels:history：パブリックチャンネルのメッセージ履歴を取得
-    - groups:history：プライベートチャンネルのメッセージ履歴を取得（必要な場合）
-    - im:history：DMのメッセージ履歴を取得（必要な場合）
-    - mpim:history：複数人DMのメッセージ履歴を取得（必要な場合）
-    - users:read：ユーザー情報を取得
+| スコープ | 説明 | 必須 |
+|---|---|---|
+| `channels:history` | パブリックチャンネルのメッセージ履歴を取得 | 必須 |
+| `users:read` | ユーザー情報（名前・アイコン）を取得 | 必須 |
+| `groups:history` | プライベートチャンネルのメッセージ履歴を取得 | 任意 |
+| `im:history` | DM のメッセージ履歴を取得 | 任意 |
+| `mpim:history` | 複数人 DM のメッセージ履歴を取得 | 任意 |
 
-7. アプリをワークスペースにインストール  
-   ページ上部の「Install App to Workspace」をクリックします。
-   - 確認画面で「許可する」をクリックします。
+5. ページ上部の「Install App to Workspace」をクリックし、権限を許可します。
+6. 「User OAuth Token」（`xoxp-` で始まる文字列）をコピーします。
 
-8. ユーザートークンの取得
-   - インストール後、「OAuth & Permissions」ページに戻り、「User OAuth Token」が表示されます
-   - このトークンをコピーします。
-     例：``` xoxp- ``` で始まる文字列
+### 4. 拡張機能の設定
 
-###  3. 拡張機能の設定
-1. 拡張機能の設定画面を開く
-   1. Chromeブラウザの右上にある拡張機能のアイコン（パズルピースの形）をクリックします。
-   2. 表示された拡張機能の一覧から「Slack Message Embedder」を探します。
-   3. 「Slack Message Embedder」を**右クリック**し、表示されたコンテキストメニューから「**オプション**」を選択します。
-2. SlackトークンとOrganization IDの設定
-   - Slack OAuthトークン：先ほど取得したユーザートークンを入力します。
-   - Organization ID：Backlogの組織IDを入力します（例：yourcompany）。  
-     **注意**：Organization IDは、BacklogのURLのサブドメイン部分です。``` https://yourcompany.backlog.jp/ ```
-3. 設定の保存  
-   「保存」ボタンをクリックして設定を保存します。
-
-###  4. Chromeへの拡張機能の読み込み
-1. Chromeで拡張機能管理ページを開く  
-   ブラウザのアドレスバーに chrome://extensions/ と入力してアクセスします。
-2. デベロッパーモードを有効にする  
-   右上の「デベロッパーモード」をオンにします。
-3. 拡張機能を読み込む
-   - 左上の「パッケージ化されていない拡張機能を読み込む」をクリックします。
-   - 拡張機能のフォルダを選択します。
-4. 拡張機能の確認
-   - 「Slack Link Embedder for Backlog」が拡張機能リストに表示されれば成功です。
+1. Chrome の拡張機能アイコンから「Slack Link Embedder for Backlog」を右クリック →「オプション」を選択します。
+2. 以下を入力して「保存」をクリックします。
+   - **Slack OAuth トークン**: 手順 3 で取得したトークン
+   - **Organization ID**: Backlog URL のサブドメイン部分（例: `https://yourcompany.backlog.jp/` なら `yourcompany`）
 
 ## 使い方
-1. Backlogを開く  
-   ChromeでBacklogのサイト（例：https://yourcompany.backlog.jp/ ）を開きます。
-2. Slackメッセージリンクを貼り付ける
-   - 課題のコメントや説明欄に、Slackのメッセージリンクを貼り付けます。  
-     例：``` https://yourworkspace.slack.com/archives/C01234567/p1612345678901234 ```  
-3. メッセージの埋め込み表示
-   - ページを表示すると、貼り付けたSlackメッセージリンクが自動的に検出され、その内容が埋め込み表示されます。
-4. メッセージの内容
-   - ユーザー名、アイコン、メッセージ内容、コードブロック、インラインコードなどが表示されます。
-5. 動的な更新
-   - ページングや新しいコメントの追加でリンクが表示された場合でも、自動的に埋め込みが行われます。
+
+1. Chrome で Backlog のサイト（例: `https://yourcompany.backlog.jp/`）を開きます。
+2. 課題のコメントや説明欄に Slack メッセージリンクを貼り付けます。
+3. ページを表示すると、リンクが自動的に検出され、メッセージ内容がカード形式で埋め込み表示されます。
+4. ページ遷移やコメントの追加で新たにリンクが現れた場合も、自動的に埋め込みが行われます。
+
+## 技術的な詳細
+
+- **ビルド不要**: バニラ JavaScript のみで構成されており、ビルドツールやトランスパイラは不要です。
+- **Manifest V3**: 最新の Chrome 拡張機能仕様に対応しています。
+- **セキュリティ**: DOMPurify で全ての HTML 出力をサニタイズし、外部 CDN への依存もありません。ライブラリはすべてローカルにバンドルされています。
+- **Slack リンクの検出パターン**: `https://{workspace}.slack.com/archives/{channelId}/p{timestamp}`
+
+## 既知の制限事項
+
+- API キャッシュ機構がないため、同じリンクでもページ表示のたびに Slack API を呼び出します。
+- OAuth フローではなく手動トークン設定方式のため、トークンの有効期限管理は手動で行う必要があります。
+- 設定した Organization ID と一致する Backlog サイトでのみ動作します。
+- 埋め込みカードの最大幅は 600px、最大高さは 500px（スクロール対応）です。
 
 ## 注意事項
-- セキュリティ
-  - ユーザートークンは強力な権限を持つため、第三者に漏洩しないように十分注意してください。
-  - トークンはローカル環境のChromeストレージに保存されます。
-- 権限設定
-  - 必要なスコープのみを付与し、過剰な権限を与えないようにしてください。
-- 制限事項
-  - この拡張機能は、Backlogの特定の組織サイトでのみ動作します。設定したOrganization IDと一致するサイトでのみ機能します。
-- サポート
-  - ご不明な点や不具合がありましたら、Issuesからお知らせください。
-  
+
+- **トークンの管理**: ユーザートークンは `chrome.storage.sync` に保存されます。第三者に漏洩しないよう十分注意してください。
+- **権限の最小化**: 必要なスコープのみを付与し、過剰な権限を与えないようにしてください。
+- **サポート**: 不具合やご要望がありましたら、[Issues](https://github.com/zetton110/slack-embed-for-backlog-chrome-extention/issues) からお知らせください。
+
 ## ライセンス
 
 このプロジェクトは MIT ライセンスのもとで公開されています。
 
-- 使用しているライブラリ：
+使用ライブラリの **DOMPurify** は Apache License 2.0 および Mozilla Public License 2.0 のデュアルライセンスです。
 
-  - **Purify ライブラリ**：Apache License 2.0 および Mozilla Public License 2.0 のもとでライセンスされています。
-
-**ライセンスファイル：**
-
-- [MIT ライセンス](LICENSE)
+- [MIT License](LICENSE)
 - [Apache License 2.0](LICENSE-APACHE)
 - [Mozilla Public License 2.0](LICENSE-MPL)
 
